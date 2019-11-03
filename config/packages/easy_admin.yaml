@@ -1,0 +1,27 @@
+easy_admin:
+    formats:
+        date: 'd/m/Y'
+    entities:
+        Campaign:
+            class: App\Entity\Campaign
+            list:
+                fields:
+                    - {property: name, label:  İsim}
+                    - {property: brand, label:  Marka}
+                    - {property: category, label:  Kategori}
+                    - {property: amount, label:  Tutar}
+                    - {property: typeDesc, label:  İndirim Türü}
+                    - {property: startDate, label:  Başlangıç Tarihi}
+                    - {property: endDate, label:  Bitiş Tarihi}
+                    - {property: priority, label:  Öncelik}
+            form:
+                fields:
+                    - {property: name, label: İsim}
+                    - {property: brand, label: Marka, type_options: {required: true}}
+                    - {property: category, label: Kategori, type_options: {required: true}}
+                    - {property: amount, label: Tutar, type_options: {required: true}}
+                    - {property: type, label: İndirim Türü, type: choice, type_options: { choices: {'Sabit İndirim' : 1, 'Yüzdelik İndirim' : 2 }, expanded: true, required: true}}
+                    - {property: startDate, label: Başlangıç Tarihi, type: date, type_options: {widget: 'single_text'}}
+                    - {property: endDate, label: Bitiş Tarihi, type: date, type_options: {widget: 'single_text'}}
+                    - {property: priority, label: Öncelik, type_options: {required: true}}
+

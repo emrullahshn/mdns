@@ -4,10 +4,10 @@ namespace App\Controller;
 
 use App\Service\SalePriceCalculator\SalePriceCalculatorService;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\RestBundle\Controller\Annotations;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
+use FOS\RestBundle\Controller\Annotations as Annotations;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * @package App\Controller
  * @Route(path="/api", name="api_")
  */
-class ApiController extends AbstractController
+class ApiController extends AbstractFOSRestController
 {
     /**
      * @var SalePriceCalculatorService $salePriceCalculatorService
@@ -33,15 +33,18 @@ class ApiController extends AbstractController
 
     /**
      *
-     * @Annotations\Post(path="/sale-price-calculate", name="sale_price_calculate")
+     * @Annotations\Post("/sale-price-calculate")
      * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @return JsonResponse
+     * @return Response
      */
-    public function salePriceCalculate(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function salePriceCalculate(Request $request, EntityManagerInterface $entityManager): Response
     {
         $content = json_decode($request->getContent(), true);
-
-        return new JsonResponse(['basket' => $this->salePriceCalculatorService->calculateSalePriceForBasket($content['basket'])]);
+        $data = [
+            'basket' => $this->salePriceCalculatorService->calculateSalePriceForBasket($content['basket'])
+        ];
+        $view = $this->view($data, 200);
+        return $this->handleView($view);
     }
 }

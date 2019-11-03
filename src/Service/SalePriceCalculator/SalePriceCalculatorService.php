@@ -7,6 +7,7 @@ use App\Entity\Campaign;
 use App\Entity\Product;
 use App\Library\DecimalMoney;
 use App\Library\SalePriceCalculator\Interfaces\SalePriceCalculatorInterface;
+use App\Library\SalePriceCalculator\SalePriceCalculatorFunctions;
 use App\Service\CampaignChecker\CampaignCheckerService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -41,11 +42,9 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
     {
         $items = $basket['items'];
         $preferredCampaign = $this->fetchPreferredCampaign($items);
-
         if ($preferredCampaign === null) {
             return $basket;
         }
-
         $campaignRelatedProductIds = $this->getProductIdsRelatedCampaign($preferredCampaign);
         $groupedItems = $this->groupProducts($items, $campaignRelatedProductIds);
         $calculatedItems = $this->applyCampaignAmountToItems($groupedItems, $preferredCampaign);
@@ -64,16 +63,13 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
     private function fetchPreferredCampaign(array $items): ?Campaign
     {
         $campaigns = $this->mergeAllCampaigns($items);
-
         if ($campaigns === null) {
             return null;
         }
-
         // If have 1 campaign, not need compare by priority
         if (count($campaigns) === 1) {
             return $campaigns[0];
         }
-
         return $this->compareByPriority($campaigns);
     }
 
@@ -108,7 +104,6 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
     private function compareByPriority(array $campaigns)
     {
         $preferredCampaign = null;
-
         /**
          * @var Campaign $campaign
          */
@@ -116,12 +111,10 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
             if ($this->campaignCheckerService->checkCampaign($campaign) === false) {
                 continue;
             }
-
             if ($preferredCampaign === null) {
                 $preferredCampaign = $campaign;
                 continue;
             }
-
             if ($preferredCampaign->getPriority() > $campaign->getPriority()) {
                 $preferredCampaign = $campaign;
             }
@@ -137,18 +130,18 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
      */
     private function applyCampaignAmountToItems(array $groupedItems, ?Campaign $preferredCampaign): array
     {
-        $calculatedItems['includedProducts'] = [];
-        $calculatedItems['notIncludedProducts'] = [];
+        $calculatedItems['includedItems'] = [];
+        $calculatedItems['notIncludedItems'] = [];
 
         if (isset($groupedItems['includedItems'])) {
-            $calculatedItems['includedProducts'] = $this->calculateIncludedProducts($groupedItems['includedItems'], $preferredCampaign);
+            $calculatedItems['includedItems'] = $this->calculateIncludedProducts($groupedItems['includedItems'], $preferredCampaign);
         }
 
         if (isset($groupedItems['notIncludedItems'])) {
-            $calculatedItems['notIncludedProducts'] = $this->calculateNotIncludedProducts($groupedItems['notIncludedItems']);
+            $calculatedItems['notIncludedItems'] = $this->calculateNotIncludedProducts($groupedItems['notIncludedItems']);
         }
 
-        return array_merge($calculatedItems['includedProducts'], $calculatedItems['notIncludedProducts']);
+        return array_merge($calculatedItems['includedItems'], $calculatedItems['notIncludedItems']);
     }
 
     /**
@@ -167,40 +160,33 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
      */
     private function calculateIncludedProducts(array $includedItems, Campaign $preferredCampaign): array
     {
+        $includedItems = SalePriceCalculatorFunctions::sortDescItemsByPrice($includedItems);
         $calculatedItems = [];
-
-        $includedItemsCount = count($includedItems);
-        $discountCountForPercentType = $includedItemsCount / 3;
-
+        // Bu sayaç yüzdelik indirim yapılan kampanyalarda her 3 üründen 1'ine
+        // kampanya tutarının uygulanması logic için eklendi.
+        $discountCountForPercentType = 0;
         foreach ($includedItems as $item) {
-            $productAmount = DecimalMoney::newMoney($item['price']);
-            $campaignAmount = $preferredCampaign->getAmount();
-            $campaignType = $preferredCampaign->getType();
+            $itemPrice = DecimalMoney::newMoney($item['price']);
 
-            if ($campaignType === Campaign::TYPE_STATIC) {
+            if ($preferredCampaign->getType() === Campaign::TYPE_STATIC) {
                 $campaignAmount = DecimalMoney::newMoney($preferredCampaign->getAmount());
-                $discountAmount = $campaignAmount->divide($includedItemsCount);
-                $item['salePrice'] = DecimalMoney::moneyToFloat($productAmount->subtract($discountAmount));
-                $calculatedItems[] = $item;
+                $calculatedItems[] = SalePriceCalculatorFunctions::applyStaticTypeDiscountToItem($campaignAmount, $itemPrice, count($includedItems));
             }
 
-            if ($campaignType === Campaign::TYPE_PERCENT) {
-                usort($includedProducts, static function ($a, $b) {
-                    return $a['price'] <=> $b['price'];
-                });
-
-                if ($discountCountForPercentType >= 1) {
-                    $discountAmount = $productAmount->multiply($campaignAmount / 100);
-                    $salePrice = $productAmount->subtract($discountAmount);
-                    $lastElement = array_pop($includedProducts);
-                    $lastElement['salePrice'] = DecimalMoney::moneyToFloat($salePrice);
-                    $calculatedItems[] = $lastElement;
-                    $discountCountForPercentType--;
+            if ($preferredCampaign->getType() === Campaign::TYPE_PERCENT) {
+                // Itemlar desc sort edildiği için ilk ürüne kampanya uygulanıyor
+                if ($discountCountForPercentType === 0) {
+                    $calculatedItems[] = SalePriceCalculatorFunctions::applyPercentTypeDiscountToItem($item, $itemPrice, $preferredCampaign->getAmount());
                 } else {
-                    $product['salePrice'] = $item['price'];
+                    $item['salePrice'] = $item['price'];
                     $calculatedItems[] = $item;
                 }
 
+                $discountCountForPercentType++;
+                // Her 3 üründen 1'ine uygulanması için sayaç 3 olduğunda sıfırlanıyor
+                if ($discountCountForPercentType === 3) {
+                    $discountCountForPercentType = 0;
+                }
             }
         }
 
@@ -214,12 +200,10 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
     private function calculateNotIncludedProducts(array $notIncludedProducts): array
     {
         $calculatedProducts = [];
-
         foreach ($notIncludedProducts as $product) {
             $product['salePrice'] = $product['price'];
             $calculatedProducts[] = $product;
         }
-
         return $calculatedProducts;
     }
 

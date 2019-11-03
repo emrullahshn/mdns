@@ -23,12 +23,18 @@ class EasyAdminEventSubscriber implements EventSubscriberInterface
 
     public function onPrePersist(GenericEvent $event): void
     {
-        $this->setRelatedProducts($event);
+        if ($event->getSubject() instanceof Campaign){
+            $this->setRelatedProducts($event);
+        }
+
     }
 
     public function onPreUpdate(GenericEvent $event): void
     {
-        $this->setRelatedProducts($event);
+        if ($event->getSubject() instanceof Campaign){
+            $this->setRelatedProducts($event);
+        }
+
     }
 
     public function setRelatedProducts(GenericEvent $event): void

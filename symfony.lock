@@ -112,9 +112,6 @@
     "egulias/email-validator": {
         "version": "2.1.11"
     },
-    "exsyst/swagger": {
-        "version": "v0.4.1"
-    },
     "friendsofsymfony/rest-bundle": {
         "version": "2.2",
         "recipe": {
@@ -122,7 +119,10 @@
             "branch": "master",
             "version": "2.2",
             "ref": "cad41ef93d6150067ae2bb3c7fd729492dff6f0a"
-        }
+        },
+        "files": [
+            "config/packages/fos_rest.yaml"
+        ]
     },
     "friendsofsymfony/user-bundle": {
         "version": "v2.1.2"
@@ -135,15 +135,6 @@
     },
     "moneyphp/money": {
         "version": "v3.2.1"
-    },
-    "nelmio/api-doc-bundle": {
-        "version": "3.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "3.0",
-            "ref": "c8e0c38e1a280ab9e37587a8fa32b251d5bc1c94"
-        }
     },
     "nesbot/carbon": {
         "version": "2.25.3"
@@ -350,7 +341,7 @@
         "version": "v4.3.5"
     },
     "symfony/property-info": {
-        "version": "v4.3.5"
+        "version": "v4.3.6"
     },
     "symfony/routing": {
         "version": "4.2",
@@ -389,6 +380,12 @@
     },
     "symfony/security-http": {
         "version": "v4.3.5"
+    },
+    "symfony/serializer": {
+        "version": "v4.3.6"
+    },
+    "symfony/serializer-pack": {
+        "version": "v1.0.2"
     },
     "symfony/service-contracts": {
         "version": "v1.1.7"
@@ -499,8 +496,5 @@
     },
     "zendframework/zend-eventmanager": {
         "version": "3.2.1"
-    },
-    "zircote/swagger-php": {
-        "version": "2.0.14"
     }
 }

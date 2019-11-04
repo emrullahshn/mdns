@@ -7,6 +7,7 @@
  - FosUserBundle (The FOSUserBundle adds support for a database-backed user system in Symfony2+.)
  - MoneyPhp/Money (PHP library to make working with money safer, easier, and fun!)
  - Carbon (A simple PHP API extension for DateTime.)
+ - Symfony Guard TokenAuthenticator
  
 ### Installation
 
@@ -17,10 +18,14 @@
 
 Default User And Admin Panel
  - Admin Panel Path: /admin
- - Default Username: admin
+ - Default Username: admin // Email : admin@domain.com
  - Password: 123456
 
 ### API
+ - Login
+ > - Path: "api/login"
+ > - Request Example: { "email": "admin@domain.com", "password": "123456" }
+ > - Response Examle: { "token":"feac2f9c9f3429ba8f7e3a03f5a1e301" }
 
  - Sale Price Calculator 
  > - Path: "/api/sale-price-calculate"
@@ -71,5 +76,7 @@ Default User And Admin Panel
                                 "salePrice": 0
                             }
                         }
-   > - PostmanCollection: https://www.getpostman.com/collections/d52514426791d8afae7b
+   
+   
+ > PostmanCollection: https://www.getpostman.com/collections/d52514426791d8afae7b
    

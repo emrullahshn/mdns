@@ -8,7 +8,7 @@ use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 
 /**
  * @ORM\Entity
- * @Gedmo\SoftDeleteable()
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=true)
  */
 class AccessToken
 {

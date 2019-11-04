@@ -42,9 +42,17 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
     {
         $items = $basket['items'];
         $preferredCampaign = $this->fetchPreferredCampaign($items);
+
         if ($preferredCampaign === null) {
-            return $basket;
+            $calculatedItems = $this->calculateNotIncludedProducts($items);
+            return [
+                'items' => $calculatedItems,
+                'price' => $basket['price'],
+                'salePrice' => $this->calculateTotalSalePrice($calculatedItems)
+            ];
+
         }
+
         $campaignRelatedProductIds = $this->getProductIdsRelatedCampaign($preferredCampaign);
         $groupedItems = $this->groupProducts($items, $campaignRelatedProductIds);
         $calculatedItems = $this->applyCampaignAmountToItems($groupedItems, $preferredCampaign);
@@ -66,10 +74,7 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
         if ($campaigns === null) {
             return null;
         }
-        // If have 1 campaign, not need compare by priority
-        if (count($campaigns) === 1) {
-            return $campaigns[0];
-        }
+
         return $this->compareByPriority($campaigns);
     }
 

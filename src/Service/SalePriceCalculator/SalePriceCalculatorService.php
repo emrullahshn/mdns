@@ -170,7 +170,7 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
 
             if ($preferredCampaign->getType() === Campaign::TYPE_STATIC) {
                 $campaignAmount = DecimalMoney::newMoney($preferredCampaign->getAmount());
-                $calculatedItems[] = SalePriceCalculatorFunctions::applyStaticTypeDiscountToItem($campaignAmount, $itemPrice, count($includedItems));
+                $calculatedItems[] = SalePriceCalculatorFunctions::applyStaticTypeDiscountToItem($item, $campaignAmount, $itemPrice, count($includedItems));
             }
 
             if ($preferredCampaign->getType() === Campaign::TYPE_PERCENT) {

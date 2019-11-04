@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Campaign;
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -24,6 +25,26 @@ class ProductRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->where('p.id IN (:productIds)')
             ->setParameter('productIds', $productIds)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getByBrandAndCategory(Campaign $campaign)
+    {
+        $qb = $this->createQueryBuilder('p');
+        if ($campaign->getBrand() !== null) {
+            $qb
+                ->andWhere('p.brand = :brand')
+                ->setParameter('brand', $campaign->getBrand());
+        }
+
+        if ($campaign->getCategory() !== null) {
+            $qb
+                ->andWhere('p.category = :category')
+                ->setParameter('category', $campaign->getCategory());
+        }
+
+        return $qb
             ->getQuery()
             ->getResult();
     }

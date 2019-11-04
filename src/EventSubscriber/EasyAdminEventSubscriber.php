@@ -2,17 +2,29 @@
 
 namespace App\EventSubscriber;
 
-use App\Entity\Brand;
 use App\Entity\Campaign;
-use App\Entity\Category;
 use App\Entity\Product;
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 class EasyAdminEventSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
+    private $entityManager;
+
+    /**
+     * EasyAdminEventSubscriber constructor.
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
     public static function getSubscribedEvents()
     {
         return [
@@ -43,10 +55,7 @@ class EasyAdminEventSubscriber implements EventSubscriberInterface
          * @var Campaign $campaign
          */
         $campaign = $event->getSubject();
-        $products = array_merge(
-            $campaign->getBrand()->getProducts()->toArray(),
-            $campaign->getCategory()->getProducts()->toArray()
-        );
+        $products = $this->entityManager->getRepository(Product::class)->getByBrandAndCategory($campaign);
 
         /**
          * @var Product $product

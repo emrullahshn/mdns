@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Brand;
+use App\Entity\Campaign;
 use App\Entity\Category;
 use App\Entity\Product;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -28,11 +29,24 @@ class MockDataFixtures extends Fixture
             ->setName('Footwear');
         $manager->persist($category2);
 
+        $campaign = (new Campaign())
+            ->setName('DefaultCampaign')
+            ->setCategory($category)
+            ->setBrand($brand)
+            ->setStartDate(new \DateTime('-5 days'))
+            ->setEndDate(new \DateTime('+5 days'))
+            ->setPriority(1)
+            ->setAmount(10)
+            ->setType(Campaign::TYPE_PERCENT)
+        ;
+        $manager->persist($campaign);
+
         $product = (new Product())
             ->setName('Red Dress')
             ->setPrice(100)
             ->setBrand($brand)
             ->setCategory($category)
+            ->addRelatedCampaign($campaign)
             ;
         $manager->persist($product);
 
@@ -41,6 +55,7 @@ class MockDataFixtures extends Fixture
             ->setPrice(79.99)
             ->setBrand($brand)
             ->setCategory($category)
+            ->addRelatedCampaign($campaign)
         ;
         $manager->persist($product2);
 
@@ -49,6 +64,7 @@ class MockDataFixtures extends Fixture
             ->setPrice(57.9)
             ->setBrand($brand)
             ->setCategory($category)
+            ->addRelatedCampaign($campaign)
         ;
         $manager->persist($product3);
 
@@ -73,6 +89,7 @@ class MockDataFixtures extends Fixture
             ->setPrice(89)
             ->setBrand($brand)
             ->setCategory($category)
+            ->addRelatedCampaign($campaign)
         ;
         $manager->persist($product6);
 

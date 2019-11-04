@@ -75,9 +75,9 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
 
     /**
      * @param array $items
-     * @return array
+     * @return array|null
      */
-    private function mergeAllCampaigns(array $items): array
+    private function mergeAllCampaigns(array $items): ?array
     {
         $campaigns = [];
 
@@ -91,6 +91,10 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
             if ($product !== null) {
                 $campaigns[$productId] = $product->getRelatedCampaigns()->toArray();
             }
+        }
+
+        if (empty($campaigns)){
+            return null;
         }
 
         // Multidimensional array merge and array unique for get unique campaigns

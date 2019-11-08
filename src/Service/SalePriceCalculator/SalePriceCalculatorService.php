@@ -241,7 +241,7 @@ class SalePriceCalculatorService implements SalePriceCalculatorInterface
         $groupedItems = [];
 
         foreach ($items as $item) {
-            if (in_array($item['productId'], $campaignRelatedProductIds, true)) {
+            if (in_array($item['productId'], $campaignRelatedProductIds)) {
                 $groupedItems['includedItems'][] = $item;
             } else {
                 $groupedItems['notIncludedItems'][] = $item;
